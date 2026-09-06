@@ -361,7 +361,7 @@ function renderMCQ(){
       <div class="qtext">${n}. ${q[0]}</div>
       ${q[1].map((opt,j)=>{
         const letter=String.fromCharCode(65+j);
-        return `<label class="option"><input type="radio" name="q${n}" value="${letter}"> <strong>${letter}.</strong> ${opt}</label>`;
+        return `<label class="option"><input type="radio" name="q${n}" value="${letter}"${j===0?" required":""}> <strong>${letter}.</strong> ${opt}</label>`;
       }).join("")}
     </div>`;
   }).join("");
@@ -371,7 +371,7 @@ function renderEssays(){
   c.innerHTML=essays.map((e,i)=>`<div class="question essay">
     <div class="qtext">${i+36}. ${e[0]} <span class="points">(5 points)</span></div>
     <div>${e[1]}</div>
-    <textarea name="essay${i}" placeholder="Type your answer here..."></textarea>
+    <textarea name="essay${i}" placeholder="Type your answer here..." required></textarea>
   </div>`).join("");
 }
 function shuffleQuestions(){
