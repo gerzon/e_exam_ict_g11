@@ -122,6 +122,14 @@ const supabaseClient = window.supabase.createClient(
     position:fixed;inset:0;z-index:20;display:none;place-items:center;
     padding:20px;background:rgba(0,43,92,.92);color:#fff
   }
+  #fullscreenScreen{
+    position:fixed;inset:0;z-index:50;display:none;place-items:center;
+    padding:20px;background:rgba(0,43,92,.96);color:#fff
+  }
+  #pageLeaveScreen{
+    position:fixed;inset:0;z-index:60;display:none;place-items:center;
+    padding:20px;background:rgba(0,43,92,.98);color:#fff
+  }
   .welcome-dialog{
     width:min(560px,100%);text-align:center;background:#fff;color:var(--text);
     border-top:7px solid var(--sti-yellow);border-radius:12px;padding:34px 28px;
@@ -165,6 +173,20 @@ const supabaseClient = window.supabase.createClient(
     <h2 id="welcomeTitle">Welcome to the Examination</h2>
     <p class="loading-message" id="loadingMessage">Preparing your randomized multiple-choice questions...</p>
     <button id="startExam" type="button" disabled>Loading...</button>
+  </div>
+</section>
+<section id="fullscreenScreen" role="dialog" aria-modal="true" aria-labelledby="fullscreenTitle">
+  <div class="welcome-dialog">
+    <h2 id="fullscreenTitle">Fullscreen Required</h2>
+    <p class="loading-message">The examination is paused because fullscreen mode was exited. Return to fullscreen to continue.</p>
+    <button id="returnFullscreen" type="button">Return to Fullscreen</button>
+  </div>
+</section>
+<section id="pageLeaveScreen" role="dialog" aria-modal="true" aria-labelledby="pageLeaveTitle">
+  <div class="welcome-dialog">
+    <h2 id="pageLeaveTitle">Examination Paused</h2>
+    <p class="loading-message">You left the examination page or minimized the window. Return to this page and fullscreen mode to continue.</p>
+    <button id="returnPage" type="button">Return to Examination</button>
   </div>
 </section>
 <header>
@@ -429,12 +451,63 @@ function prepareExam(){
     startButton.focus();
   },800);
 }
-function startExam(){
+async function enterFullscreen(){
+  if(!document.fullscreenElement){
+    await document.documentElement.requestFullscreen();
+  }
+}
+let examStarted=false;
+let pageLeaveRefreshStarted=false;
+function refreshAfterPageLeave(){
+  if(examStarted&&!pageLeaveRefreshStarted){
+    pageLeaveRefreshStarted=true;
+    window.location.reload();
+  }
+}
+function pauseForPageLeave(){
+  if(examStarted&&(document.hidden||!document.hasFocus())){
+    document.getElementById("pageLeaveScreen").style.display="grid";
+    document.body.style.overflow="hidden";
+  }
+}
+function resumeAfterPageReturn(){
+  if(examStarted&&document.visibilityState==="visible"&&document.hasFocus()&&document.fullscreenElement){
+    document.getElementById("pageLeaveScreen").style.display="none";
+    document.body.style.overflow="";
+  }
+}
+async function startExam(){
+  try{
+    await enterFullscreen();
+  }catch(error){
+    console.error("Fullscreen is required to start the examination:",error);
+    document.getElementById("loadingMessage").textContent="Fullscreen permission is required to start the examination.";
+    return;
+  }
   document.getElementById("welcomeScreen").style.display="none";
+  document.getElementById("fullscreenScreen").style.display="none";
   document.body.style.overflow="";
+  examStarted=true;
   document.getElementById("name").focus();
 }
 document.getElementById("startExam").addEventListener("click",startExam);
+document.getElementById("returnFullscreen").addEventListener("click",startExam);
+document.getElementById("returnPage").addEventListener("click",startExam);
+document.addEventListener("fullscreenchange",()=>{
+  if(examStarted&&!document.fullscreenElement){
+    document.getElementById("fullscreenScreen").style.display="grid";
+    document.body.style.overflow="hidden";
+    document.getElementById("returnFullscreen").focus();
+  }
+  resumeAfterPageReturn();
+});
+document.addEventListener("visibilitychange",pauseForPageLeave);
+window.addEventListener("blur",pauseForPageLeave);
+window.addEventListener("focus",resumeAfterPageReturn);
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden) refreshAfterPageLeave();
+});
+window.addEventListener("blur",refreshAfterPageLeave);
 document.body.style.overflow="hidden";
 window.addEventListener("load",prepareExam,{once:true});
 </script>
