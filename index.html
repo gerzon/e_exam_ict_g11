@@ -240,7 +240,7 @@ const supabaseClient = window.supabase.createClient(
 
     <section class="card">
       <div class="actions">
-        <button class="submit" type="submit">Submit Examination</button>
+        <button id="submitButton" class="submit" type="submit">Submit Examination</button>
         <button class="reset" type="button" onclick="resetExam()">Reset Answers</button>
       </div>
     </section>
@@ -411,6 +411,11 @@ async function grade(){
 
 if (error) {
   console.error("Could not save exam result:", error);
+} else {
+  const submitButton=document.getElementById("submitButton");
+  submitButton.type="button";
+  submitButton.textContent="Retake Examination";
+  submitButton.onclick=retakeExam;
 }
   document.getElementById("submissionLoading").style.display="none";
   document.getElementById("result").style.display="block";
@@ -435,6 +440,9 @@ function resetExam(){
     closeResult();
     window.scrollTo({top:0,behavior:"smooth"});
   }
+}
+function retakeExam(){
+  window.location.reload();
 }
 function prepareExam(){
   shuffleQuestions();
