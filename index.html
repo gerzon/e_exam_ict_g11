@@ -338,18 +338,27 @@ async function grade(){
     }
   });
   const points=correct*2;
-  const { error } = await supabaseClient
-  .from("exam_submissions")
-  .insert({
-    student_name: document.getElementById("name").value.trim(),
-    section: document.getElementById("section").value.trim(),
-    exam_date: document.getElementById("date").value,
-    mcq_score: points
-  });
+  let saveMessage="";
+  if(SUPABASE_KEY==="******"){
+    saveMessage="The examination was graded, but it could not be saved because the Supabase API key is not configured.";
+    console.error(saveMessage);
+  }else{
+    const { error } = await supabaseClient
+      .from("exam_submissions")
+      .insert({
+        student_name: document.getElementById("name").value.trim(),
+        section: document.getElementById("section").value.trim(),
+        exam_date: document.getElementById("date").value,
+        mcq_score: points,
+        essay_answered: 0
+      });
 
-if (error) {
-  console.error("Could not save exam result:", error);
-} else {
+    if (error) {
+      saveMessage="The examination was graded, but it could not be saved. Please contact your instructor.";
+      console.error("Could not save exam result:", error);
+    }
+  }
+if (!saveMessage) {
   const submitButton=document.getElementById("submitButton");
   submitButton.type="button";
   submitButton.textContent="Retake Examination";
@@ -360,7 +369,8 @@ if (error) {
   document.getElementById("resultText").innerHTML=
     `<div class="score">${points} / 80</div>
      <p><strong>Multiple-choice:</strong> ${correct} correct out of 40. ${answered} item(s) answered.</p>
-     <p class="success">Your score is based on 40 multiple-choice items worth 2 points each.</p>`;
+     <p class="success">Your score is based on 40 multiple-choice items worth 2 points each.</p>
+     ${saveMessage?`<p class="warning"><strong>Save status:</strong> ${saveMessage}</p>`:"<p class=\"success\"><strong>Save status:</strong> Result saved successfully.</p>"}`;
   document.getElementById("review").innerHTML = review.length
     ? `<h3>Items to Review</h3>${review.map(x=>`<div class="wrong">Item ${x.n}: your answer <strong>${x.selected}</strong> • correct answer <strong>${x.correct}</strong><br>${questions[x.n-1][3]}</div>`).join("")}`
     : `<div class="correct">Excellent! All answered items are correct.</div>`;
