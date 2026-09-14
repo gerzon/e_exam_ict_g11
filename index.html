@@ -211,31 +211,24 @@ const supabaseClient = window.supabase.createClient(
     <section class="card">
       <div class="section-title">Instructions</div>
       <div class="instructions">
-        <strong>Part I:</strong> Choose the best answer. 35 items × 2 points = 70 points.<br>
-        <strong>Part II:</strong> Answer clearly using appropriate programming terminology and examples. 6 items × 5 points = 30 points.<br>
-        <strong>Total:</strong> 100 points.
+        <strong>Multiple Choice:</strong> Choose the best answer. 40 items × 2 points = 80 points.<br>
+        <strong>Total:</strong> 80 points.
         <table class="grading-scale" aria-label="Personal grading scale">
           <thead>
             <tr><th>Score</th><th>Recording</th></tr>
           </thead>
           <tbody>
-            <tr><td>90 - 100</td><td>Will be recorded as 100 points</td></tr>
-            <tr><td>70 - 89</td><td>Actual score</td></tr>
-            <tr><td>69 &amp; below</td><td>Will be recorded as zero points</td></tr>
+            <tr><td>72 - 80</td><td>Will be recorded as 100 points</td></tr>
+            <tr><td>56 - 71</td><td>Actual score</td></tr>
+            <tr><td>55 &amp; below</td><td>Will be recorded as zero points</td></tr>
           </tbody>
         </table>
       </div>
     </section>
 
     <section class="card">
-      <div class="section-title">Part I – Multiple Choice <span class="points">(35 items × 2 points = 70 points)</span></div>
+      <div class="section-title">Multiple Choice <span class="points">(40 items × 2 points = 80 points)</span></div>
       <div id="mcqContainer"></div>
-    </section>
-
-    <section class="card">
-      <div class="section-title">Part II – Essay <span class="points">(6 items × 5 points = 30 points)</span></div>
-      <div id="essayContainer"></div>
-      <p class="warning"><strong>Note:</strong> Essay responses are not automatically graded. The instructor should evaluate Part II manually.</p>
     </section>
 
     <section class="card">
@@ -260,119 +253,66 @@ const supabaseClient = window.supabase.createClient(
 
 <script>
 const questions = [
-["What is the primary purpose of problem analysis in programming?",["To immediately write code","To determine what must be accomplished before designing a solution","To choose a programming language","To debug a finished program"],"B"],
-["In IPO analysis, what does the letter I represent?",["Instruction","Integer","Input","Implementation"],"C"],
-["Which is the process in the notebook-cost problem?",["Display the total cost","Obtain the customer name","Multiply the number of notebooks by the price per notebook","Store the program in a file"],"C"],
-["Which statement best describes an output?",["Information supplied to a program","An operation performed on input","A limitation imposed on a solution","Information produced by a program"],"D"],
-["A condition that limits how a solution must operate is called a:",["Requirement","Constraint","Process","Output"],"B"],
-["If a problem does not mention taxes or discounts, assuming the total is based only on quantity and unit price is an example of a(n):",["Algorithm","Constraint","Assumption","Output"],"C"],
-["What is decomposition?",["Translating Java into pseudocode","Dividing a larger problem into smaller tasks","Removing all variables from a program","Combining several programs into one"],"B"],
-["Which question belongs to problem analysis?",["What inputs are required?","Which IDE has the best theme?","What color should the interface use?","How fast is the computer?"],"A"],
-["Which characteristic means an algorithm should eventually reach an end?",["Clear","Ordered","Finite","Effective"],"C"],
-["Which characteristic means each algorithm step contributes meaningfully to the solution?",["Effective","Finite","Ordered","Visual"],"A"],
-["Which best describes an algorithm?",["A programming language","A finite, ordered set of steps for solving a problem","A graphical user interface","A database table"],"B"],
-["What is pseudocode?",["Exact Java syntax","Machine code written by a compiler","An informal, structured way of expressing an algorithm","A flowchart symbol"],"C"],
-["Which pseudocode statement indicates the beginning of an algorithm?",["INPUT","SET","OUTPUT","START"],"D"],
-["Which pseudocode statement is used to assign or calculate a value?",["SET","INPUT","OUTPUT","END"],"A"],
-["What does a flowchart use to represent an algorithm?",["Only Java keywords","Standard symbols connected by flowlines","Database records","Comments and annotations only"],"B"],
-["Which control structure performs instructions one after another in their given order?",["Selection","Repetition","Sequence","Recursion"],"C"],
-["What is solution development?",["Translating a designed algorithm into a working program","Identifying only the program's output","Drawing a flowchart without logic","Removing all constraints"],"A"],
-["Which Java statement correctly calculates total cost for quantity and price?",["double totalCost = quantity + price;","double totalCost = quantity * price;","double totalCost = quantity / price;","double totalCost = quantity % price;"],"B"],
-["What is the output of: int result = 7 / 2; ?",["2","2.5","3","4"],"C"],
-["Why does 7 / 2 produce 3 when both operands are int?",["Java rounds up","Java performs integer division and discards the fractional part","Java converts both values to double","Division always returns a decimal"],"B"],
-["What is the result of 17 % 5?",["1","2","3","4"],"B"],
-["Which operator returns the remainder after division?",["/","*","%","None of these"],"C"],
-["What is the output of: 10 + 5 * 2?",["30","25","20","15"],"C"],
-["What is the output of: (10 + 5) * 2?",["20","25","30","35"],"C"],
-["Which has the highest priority in the basic arithmetic order described in the handout?",["Addition","Subtraction","Parentheses","Division"],"C"],
-["What is the result of: 20 / 5 * 2?",["2","4","8","10"],"C"],
-["Which operator checks whether two values are equal?",["=","==","!=" ,">"],"B"],
-["What is the difference between = and == in Java?",["Both assign values","= compares values while == assigns values","= assigns a value while == compares values","There is no difference"],"C"],
-["Which relational operator means “not equal to”?",["!=","<=",">=","=="],"A"],
-["What is the result of: 85 > 75?",["true","false","85","75"],"A"],
-["Which operator produces true only when both Boolean expressions are true?",["||","!","&&","=="],"C"],
-["Which operator produces true when at least one Boolean expression is true?",["&&","||","!","!="],"B"],
-["If boolean available = true;, what is the value of !available?",["true","false","1","null"],"B"],
-["Given score = 85 and attendance = 90, what is the result of score >= 75 && attendance >= 80?",["true","false","75","80"],"A"],
-["Which type of error occurs when a program runs but produces an incorrect result because it performs the wrong operation?",["Syntax error","Logic error","Compilation success","Formatting error"],"B"]
-];
-/*
-["A programmer wants to store a collection of student names where the number of students may increase or decrease while the program is running. Which collection is most appropriate based on the handout?",["Array","ArrayList","Stack","Queue"],"B"],
-["A program stores Student ID → Student Name and retrieves a student's name by specifying the ID. Which collection is most suitable?",["Stack","Queue","Hashtable","ArrayList"],"C"],
-["A programmer needs a collection that stores key-value pairs while keeping the keys sorted. Which collection should be considered?",["SortedList","Stack","Queue","ArrayList"],"A"],
-["Stack<string> actions contains Open, Edit, Save in that order using Push(). Which item is returned first by Pop()?",["Open","Edit","Save","All three items"],"C"],
-["A browser history feature needs to process the most recently added item first. Which collection behavior fits?",["FIFO","LIFO","Sorted access","Key-value access"],"B"],
-["A customer-service system processes customers in the order they arrive. Which collection best represents this behavior?",["Stack","Queue","Hashtable","SortedList"],"B"],
-["Queue<int> numbers contains 10, 20, 30 in that order. What does Peek() return?",["10","20","30","Nothing"],"A"],
-["Queue<int> numbers contains 10, 20, 30. After int x = numbers.Dequeue(); what is x?",["10","20","30","0"],"A"],
-["A developer wants a collection that stores integers and prevents accidentally adding a string into the same collection. Which is most appropriate?",["ArrayList","Hashtable","List ","List<objack>"],"C"],
-["Why are generic collections useful when developing applications?",["They eliminate variables.","They allow reusable code across different data types.","They automatically connect applications to databases.","They guarantee error-free programs."],"B"],
-["Which statement best describes List<T>?",["It is fixed-size.","It is dynamically allocated and can grow and shrink.","It only stores key-value pairs.","It always follows FIFO."],"B"],
-["List<string> names contains Anna, Ben, Carlo. Which accesses Ben?",["names[0]","names[1]","names[2]","names[\"Ben\"]"],"B"],
-["A list contains Anna, Ben, Carlo, Ben. After names.Remove(\"Ben\"), what happens?",["Both Ben entries are removed.","Only the first matching Ben is removed.","The entire list is removed.","Nothing is removed."],"B"],
-["A programmer wants to determine the position of Carlo in a List<string>. Which method is used?",["Sort()","Remove()","IndexOf()","ContainsValue()"],"C"],
-["If IndexOf() cannot find an element in a List<T>, what does it return?",["0","1","-1","null"],"C"],
-["A student wants to arrange the contents of a list into sorted order. Which method is used?",["Add()","Sort()","Remove()","IndexOf()"],"B"],
-["Which correctly compares Stack<T> and Queue<T>?",["Stack FIFO; Queue LIFO","Both FIFO","Stack LIFO; Queue FIFO","Both LIFO"],"C"],
-["Which operation adds an item to a Stack<T>?",["Enqueue","Dequeue","Push","Add"],"C"],
-["Which operation removes the item at the top of a Stack<T>?",["Pop","Peek","Push","Enqueue"],"A"],
-["What is the main difference between Peek() and Pop() on a stack?",["Peek removes; Pop adds.","Peek views without removing; Pop removes.","Both remove.","Both add."],"B"],
-["A developer wants a method reference that can point to another method when the signature matches. What C# feature should be used?",["Interface","Delegate","ArrayList","Hashtable"],"B"],
-["Which statement best describes a delegate?",["Stores only integers.","Encapsulates a method and holds a reference to a method.","Automatically creates a database connection.","Replaces every class."],"B"],
-["Given public delegate int MathOperation(int x, int y); which method could it reference?",["int Add(int x, int y)","void Add(int x, int y)","int Add(int x)","string Add(int x, int y)"],"A"],
-["Why must a referenced method have a matching signature?",["Delegate determines class name.","Delegate specifies expected return type and parameters.","Delegate changes parameters automatically.","Delegate only works with static methods."],"B"],
-["Which correctly creates a delegate referencing Formula.getSum?",["MathOperation op = new MathOperation(Formula.getSum);","MathOperation op = Formula.getSum();","MathOperation op = new Formula();","Formula op = MathOperation.getSum;"],"A"],
-["What is the main advantage of public delegate X DisplayOutput<X>(X arg)?",["Only integers.","It can reference methods using different data types while following the same pattern.","It removes methods.","It only references two-parameter methods."],"B"],
-["If X is double in DisplayOutput<double>, what method can it reference?",["A method returning double and receiving one double parameter","A method returning string and receiving one double parameter","A method returning double and receiving two int parameters","A void method with no parameters"],"A"],
-["Which best describes an event in C#?",["A collection that stores objects.","A class member fired when a specific action occurs.","Always a database operation.","A special array."],"B"],
-["A button click automatically runs a registered method. What concept is demonstrated?",["Event handling","Array indexing","Generic collection","Sorting"],"A"],
-["What is the role of an event handler?",["Stores objects.","The method invoked when an event occurs.","Creates a generic type.","Sorts an ArrayList."],"B"],
-["Before declaring an event, what should be declared first according to the handout?",["A queue","A delegate","An ArrayList","A constructor"],"B"],
-["An event uses a delegate that accepts two parameters. What should a registered method generally have?",["No parameters","One parameter","Two matching parameters","Three parameters"],"C"],
-["What is the purpose of eventName += delegateInstance;?",["Removes a subscription.","Registers/adds a delegate to the event.","Creates a class.","Sorts subscribers."],"B"],
-["Which accessors are involved in registering and unregistering event subscriptions?",["get and set","push and pop","add and remove","enqueue and dequeue"],"C"],
-["A programmer needs a mechanism that can reference methods from different classes as long as their signatures match. Which is the better fit?",["Delegate","ArrayList","Queue","SortedList"],"A"]
+["Who led the Green Team at Sun Microsystems in the early 1990s that created the programming language originally named Oak?",["Dennis Ritchie","James Gosling","Bjarne Stroustrup","Guido van Rossum"],"B","James Gosling led the Green Team and created Oak, later renamed Java."],
+["Which Java core component compiles Java source code (.java) into bytecode (.class)?",["JVM","JRE","javac","JDK Library"],"C","The javac tool transforms Java source code into bytecode."],
+["Which Java platform is designed for mobile and resource-constrained embedded devices?",["Java SE","Java EE / Jakarta EE","Java ME","Java Card"],"C","Java ME is designed for embedded and resource-constrained devices."],
+["Which core component executes Java bytecode and supports platform independence?",["Java Virtual Machine (JVM)","Java Development Kit (JDK)","Java Compiler (javac)","Integrated Development Environment (IDE)"],"A","The JVM executes bytecode and enables cross-platform execution."],
+["Which object-oriented principle keeps data and behavior grouped together within a class?",["Inheritance","Polymorphism","Abstraction","Encapsulation"],"D","Encapsulation keeps data and behavior together within classes and objects."],
+["What popular Java web framework is widely used to build web applications and RESTful microservices?",["Swing","JavaFX","Spring Boot","Jakarta Card"],"C","Spring Boot is widely used for web applications and microservices."],
+["Which platform is tailored for smart cards, SIM cards, and secure elements?",["Java SE","Java Card","Java ME","Jakarta EE"],"B","Java Card targets smart cards, SIM cards, and secure elements."],
+["What mechanism automatically manages memory by removing objects that are no longer needed?",["Manual Deallocation","Bytecode Verification","Garbage Collection","Just-In-Time Compilation"],"C","Garbage collection reclaims memory held by unreferenced objects."],
+["Which environment variable points directly to the JDK installation directory?",["PATH","JAVA_HOME","CLASSPATH","JDK_ROOT"],"B","JAVA_HOME points to the JDK installation directory."],
+["Which command displays the currently installed version of the Java compiler?",["java -version","javac -version","java -compiler","javac -v"],"B","The command javac -version prints the compiler version."],
+["What IDE feature suggests keywords, methods, and variables as code is typed?",["Code Completion","Syntax Highlighting","Error Detection","Integrated Debugger"],"A","Code completion suggests methods, variables, and keywords."],
+["In a standard Java project, which component contains compiled .class files produced during building?",["Source Packages","Libraries","Build Files","Project Files"],"C","Build files contain compiled class files and generated build artifacts."],
+["Which IDE feature displays keywords and strings in distinct colors?",["Integrated Debugger","Version Control Integration","Syntax Highlighting","Code Refactoring"],"C","Syntax highlighting uses distinct colors for code elements."],
+["What is the primary function of the Build process before running a Java application?",["Executes the program in the JVM","Compiles source code into bytecode and checks for errors","Formats the source code style","Deletes old class files"],"B","Building compiles source code and reports compilation errors."],
+["What is the exact entry point method where every Java console application begins execution?",["public static void Start(String[] args)","public void main(String args)","public static void main(String[] args)","static main(String[] args)"],"C","The standard entry point is public static void main(String[] args)."],
+["If a class is declared as public class GradeReport, what must the source file be named?",["gradereport.java","GradeReport.java","GradeReport.class","Grade_Report.java"],"B","A public class name must match its source file name exactly."],
+["What naming convention is standard for Java class names such as StudentPortal?",["camelCase","snake_case","PascalCase","UPPERCASE"],"C","Java class names conventionally use PascalCase."],
+["Which symbol terminates standard executable statements in Java?",["Colon (:)","Period (.)","Semicolon (;)","Comma (,)"],"C","Standard Java statements terminate with a semicolon."],
+["Which keyword indicates that a method does not return a value?",["static","public","void","null"],"C","The void keyword indicates no return value."],
+["What naming convention is standard for Java method and variable names?",["PascalCase","camelCase","Kebab-case","MACRO_CASE"],"B","Methods and variables conventionally use camelCase."],
+["What structural error occurs when a complete method declaration is written inside another method?",["Nesting error / Illegal method placement","Method chaining","Class inheritance issue","Package violation"],"A","Java method declarations cannot be nested inside another method."],
+["What is a group of code enclosed within opening and closing curly braces called?",["Statement","Block","Class header","Expression"],"B","Code enclosed in braces is called a block."],
+["Which primitive type occupies 32 bits and is the default choice for integer values?",["byte","short","int","long"],"C","int is a 32-bit signed integer type."],
+["What suffix must be appended to a floating-point literal assigned directly to a float?",["D or d","F or f","L or l","M or m"],"B","Float literals require an F or f suffix."],
+["Which primitive type stores a single Unicode character in single quotes?",["String","char","byte","Text"],"B","The char type stores one Unicode character."],
+["Which keyword declares a constant whose value cannot be reassigned?",["static","const","final","immutable"],"C","The final keyword prevents reassignment after initialization."],
+["What comment begins with /** and ends with */ for Javadoc HTML documentation?",["Single-line comment","Block comment","Documentation comment","Inline comment"],"C","Documentation comments are parsed by Javadoc."],
+["What conversion occurs automatically when assigning a smaller numeric type to a larger type?",["Narrowing conversion","Explicit casting","Widening conversion","String parsing"],"C","Assigning a smaller numeric type to a larger one is widening conversion."],
+["What is the result of value %= 3 when value initially equals 11?",["3","2","3.66","0"],"B","11 % 3 equals 2, the remainder after division."],
+["What symbols create a single-line comment in Java?",["/*","//","#","<!--"],"B","Single-line comments begin with two forward slashes."],
+["What is the process of breaking a large problem into smaller manageable tasks called?",["Algorithm design","Decomposition","Pseudocode","Verification"],"B","Decomposition breaks a larger problem into smaller tasks."],
+["Which flowchart shape represents an Input or Output operation?",["Oval / Rectangle with rounded ends","Parallelogram","Rectangle","Diamond"],"B","A parallelogram represents input/output operations."],
+["In pseudocode, what is the purpose of SET?",["Obtains information from the user","Assigns or calculates a value","Displays a result","Indicates algorithm end"],"B","SET assigns or calculates a value."],
+["What type of flowchart symbol is represented by a diamond?",["Terminator","Process","Decision","Flowline"],"C","A diamond represents a decision condition."],
+["What error occurs when a program runs but produces incorrect results?",["Syntax error","Runtime crash","Logic error","Linker error"],"C","A logic error causes incorrect operations or results."],
+["In Java integer division, what is the result of 7 / 2?",["3.5","3","4","1"],"B","Integer division discards the decimal fraction and yields 3."],
+["Which relational operator checks whether two values are equal?",["=","==","!=","<>"],"B","The == operator tests equality; = performs assignment."],
+["What is the result of (true || false)?",["true","false","null","Error"],"A","Logical OR is true when at least one operand is true."],
+["Which operation is performed first in 10 + 5 * 2?",["10 + 5","5 * 2","Left to right addition","Evaluates to 30"],"B","Multiplication has higher precedence than addition."],
+["Which logical operator reverses a Boolean value?",["&&","||","!","^"],"C","The logical NOT operator ! inverts a Boolean value."]
 ];
 
-const essays = [
-["Collections in a Real-World System","Imagine that you are developing a school enrollment system. Explain which collection you would use for: a list of students, student ID and student name pairs, students waiting to be processed, and a collection where the most recently added item should be processed first. Explain why you selected each collection."],
-["List<T> vs. Array","Explain the difference between a traditional array and List<T> in terms of size and flexibility. Give one practical situation where List<T> would be more convenient than an array."],
-["Stack vs. Queue","Explain the difference between LIFO and FIFO. Give one real-world example for each and explain why the behavior of the collection fits the example."],
-["Understanding Delegates","In your own words, explain what a delegate is and why a programmer would use one instead of directly calling a method. Include a simple programming scenario where a delegate would be useful."],
-["Events and Event Handlers","Explain the relationship among a delegate, event, and event handler in C#. Describe what happens when an event occurs and a method has been registered to respond to it."],
-["Generics and Reusability","Explain why generics are useful in C#. Using List<T>, Queue<T>, or Stack<T> as an example, describe how generics make code more reusable and allow the programmer to work with different data types."]
-];
-*/
-
-const essays = [
-["Problem Analysis","Explain why a programmer should understand and analyze a problem before writing code. In your answer, discuss inputs, processes, outputs, and constraints."],
-["Algorithms, Pseudocode, and Flowcharts","Explain the difference between an algorithm, pseudocode, and a flowchart. Describe how each can help a programmer before implementation."],
-["Decomposition","A program must calculate the total cost of items purchased. Describe how you would use decomposition to break this problem into smaller tasks."],
-["Syntax and Logic Errors","Explain the difference between a syntax error and a logic error. Give one Java example of each and explain how the programmer can identify or correct it."],
-["Java Operator Precedence","Explain Java's basic arithmetic operator precedence using this expression: 20 + 10 * 2. Then explain how parentheses can change the result."],
-["Logical Operators","Explain the difference among &&, ||, and ! in Java. Give a simple example showing when each logical operator would be appropriate."]
-];
+function escapeHTML(value){
+  return String(value).replace(/[&<>"']/g,character=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[character]));
+}
 
 function renderMCQ(){
   const c=document.getElementById("mcqContainer");
   c.innerHTML=questions.map((q,i)=>{
     const n=i+1;
     return `<div class="question">
-      <div class="qtext">${n}. ${q[0]}</div>
+      <div class="qtext">${n}. ${escapeHTML(q[0])}</div>
       ${q[1].map((opt,j)=>{
         const letter=String.fromCharCode(65+j);
-        return `<label class="option"><input type="radio" name="q${n}" value="${letter}"${j===0?" required":""}> <strong>${letter}.</strong> ${opt}</label>`;
+        return `<label class="option"><input type="radio" name="q${n}" value="${letter}"${j===0?" required":""}> <strong>${letter}.</strong> ${escapeHTML(opt)}</label>`;
       }).join("")}
     </div>`;
   }).join("");
-}
-function renderEssays(){
-  const c=document.getElementById("essayContainer");
-  c.innerHTML=essays.map((e,i)=>`<div class="question essay">
-    <div class="qtext">${i+36}. ${e[0]} <span class="points">(5 points)</span></div>
-    <div>${e[1]}</div>
-    <textarea name="essay${i}" placeholder="Type your answer here..." required></textarea>
-  </div>`).join("");
 }
 function shuffleQuestions(){
   for(let i=questions.length-1;i>0;i--){
@@ -398,15 +338,13 @@ async function grade(){
     }
   });
   const points=correct*2;
-  const essayAnswered=essays.filter((_,i)=>document.querySelector(`[name="essay${i}"]`).value.trim()).length;
   const { error } = await supabaseClient
   .from("exam_submissions")
   .insert({
     student_name: document.getElementById("name").value.trim(),
     section: document.getElementById("section").value.trim(),
     exam_date: document.getElementById("date").value,
-    mcq_score: points,
-    essay_answered: essayAnswered
+    mcq_score: points
   });
 
 if (error) {
@@ -420,13 +358,12 @@ if (error) {
   document.getElementById("submissionLoading").style.display="none";
   document.getElementById("result").style.display="block";
   document.getElementById("resultText").innerHTML=
-    `<div class="score">Part I: ${points} / 70</div>
-     <p><strong>Multiple-choice:</strong> ${correct} correct out of 35. ${answered} item(s) answered.</p>
-     <p><strong>Part II:</strong> ${essayAnswered} of 6 essay response(s) entered. These require instructor grading (5 points each).</p>
-     <p class="success">The final 100-point score should include the instructor's manually graded essay points.</p>`;
+    `<div class="score">${points} / 80</div>
+     <p><strong>Multiple-choice:</strong> ${correct} correct out of 40. ${answered} item(s) answered.</p>
+     <p class="success">Your score is based on 40 multiple-choice items worth 2 points each.</p>`;
   document.getElementById("review").innerHTML = review.length
-    ? `<h3>Items to Review</h3>${review.map(x=>`<div class="wrong">Item ${x.n}: your answer <strong>${x.selected}</strong> • correct answer <strong>${x.correct}</strong></div>`).join("")}`
-    : `<div class="correct">Excellent! All answered Part I items are correct.</div>`;
+    ? `<h3>Items to Review</h3>${review.map(x=>`<div class="wrong">Item ${x.n}: your answer <strong>${x.selected}</strong> • correct answer <strong>${x.correct}</strong><br>${questions[x.n-1][3]}</div>`).join("")}`
+    : `<div class="correct">Excellent! All answered items are correct.</div>`;
   document.querySelector(".result-close").focus();
 }
 document.getElementById("examForm").addEventListener("submit",e=>{e.preventDefault();grade();});
@@ -447,7 +384,6 @@ function retakeExam(){
 function prepareExam(){
   shuffleQuestions();
   renderMCQ();
-  renderEssays();
   document.getElementById("date").valueAsDate=new Date();
   document.getElementById("loadingMessage").textContent="Your questions are ready. Good luck!";
   const startButton=document.getElementById("startExam");
