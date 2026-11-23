@@ -48,6 +48,19 @@ const supabaseClient = window.supabase.createClient(
   h1{margin:7px 0 4px;font-size:28px}
   .subtitle{margin:0;color:#e9f1ff}
   .container{max-width:1000px;margin:24px auto;padding:0 15px}
+  .subject-tabs{
+    max-width:1000px;margin:22px auto 0;padding:0 15px;display:flex;gap:10px;flex-wrap:wrap
+  }
+  .tab-button{
+    flex:1 1 180px;border:1px solid var(--border);background:#fff;color:var(--sti-blue-dark);
+    border-radius:10px 10px 0 0;padding:12px 18px;font-weight:700;cursor:pointer;
+    box-shadow:0 -2px 8px rgba(0,0,0,.03)
+  }
+  .tab-button.active{
+    background:var(--sti-blue);color:#fff;border-color:var(--sti-blue);box-shadow:none
+  }
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
   .card{
     background:#fff;border:1px solid var(--border);border-radius:12px;
     padding:22px;margin-bottom:18px;box-shadow:0 3px 12px rgba(0,0,0,.05)
@@ -197,108 +210,175 @@ const supabaseClient = window.supabase.createClient(
   </div>
 </header>
 
+<div class="subject-tabs" role="tablist" aria-label="Examination subjects">
+  <button class="tab-button active" type="button" data-tab="ict" role="tab" aria-selected="true" aria-controls="ict-panel" id="tab-ict">ICT G11</button>
+  <button class="tab-button" type="button" data-tab="math" role="tab" aria-selected="false" aria-controls="math-panel" id="tab-math">General Mathematics</button>
+</div>
+
 <main class="container">
-  <form id="examForm">
-    <section class="card">
-      <div class="section-title">Student Information</div>
-      <div class="meta">
-        <div><label for="name">Name</label><input id="name" type="text" placeholder="Enter your full name" required></div>
-        <div><label for="section">Section</label><input id="section" type="text" placeholder="Section" value="TECHPRO ICT 1101" disabled></div>
-        <div><label for="date">Date</label><input id="date" type="date" required></div>
+  <div id="ict-panel" class="tab-panel active" role="tabpanel" aria-labelledby="tab-ict">
+    <form id="examForm">
+      <section class="card">
+        <div class="section-title">Student Information</div>
+        <div class="meta">
+          <div><label for="name">Name</label><input id="name" type="text" placeholder="Enter your full name" required></div>
+          <div><label for="section">Section</label><input id="section" type="text" placeholder="Section" value="TECHPRO ICT 1101" disabled></div>
+          <div><label for="date">Date</label><input id="date" type="date" required></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">Instructions</div>
+        <div class="instructions">
+          <strong>Multiple Choice:</strong> Choose the best answer. 35 items × 2 points = 70 points.<br>
+          <strong>Total:</strong> 70 points.
+          <table class="grading-scale" aria-label="Personal grading scale">
+            <thead>
+              <tr><th>Score</th><th>Recording</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>63 - 70</td><td>Will be recorded as 100 points</td></tr>
+              <tr><td>49 - 62</td><td>Actual score</td></tr>
+              <tr><td>48 &amp; below</td><td>Will be recorded as zero points</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">Multiple Choice <span class="points">(35 items × 2 points = 70 points)</span></div>
+        <div id="mcqContainer"></div>
+      </section>
+
+      <section class="card">
+        <div class="actions">
+          <button id="submitButton" class="submit" type="submit">Submit Examination</button>
+          <button class="reset" type="button" onclick="resetExam()">Reset Answers</button>
+        </div>
+      </section>
+    </form>
+
+    <section id="result" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+      <div class="result-dialog">
+        <button class="result-close" type="button" onclick="closeResult()" aria-label="Close examination result">Close</button>
+        <div id="resultTitle" class="section-title">Examination Result</div>
+        <div id="resultText"></div>
+        <div id="review" class="review"></div>
       </div>
     </section>
+  </div>
 
-    <section class="card">
-      <div class="section-title">Instructions</div>
-      <div class="instructions">
-        <strong>Multiple Choice:</strong> Choose the best answer. 40 items × 2 points = 80 points.<br>
-        <strong>Total:</strong> 80 points.
-        <table class="grading-scale" aria-label="Personal grading scale">
-          <thead>
-            <tr><th>Score</th><th>Recording</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>72 - 80</td><td>Will be recorded as 100 points</td></tr>
-            <tr><td>56 - 71</td><td>Actual score</td></tr>
-            <tr><td>55 &amp; below</td><td>Will be recorded as zero points</td></tr>
-          </tbody>
-        </table>
+  <div id="math-panel" class="tab-panel" role="tabpanel" aria-labelledby="tab-math" hidden>
+    <form id="mathExamForm">
+      <section class="card">
+        <div class="section-title">Student Information</div>
+        <div class="meta">
+          <div><label for="mathName">Name</label><input id="mathName" type="text" placeholder="Enter your full name" required></div>
+          <div><label for="mathSection">Section</label><input id="mathSection" type="text" placeholder="Section" value="STEM - General Math" disabled></div>
+          <div><label for="mathDate">Date</label><input id="mathDate" type="date" required></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">Instructions</div>
+        <div class="instructions">
+          <strong>Multiple Choice:</strong> Choose the best answer. 10 items × 2 points = 20 points.<br>
+          <strong>Total:</strong> 20 points.
+          <table class="grading-scale" aria-label="Mathematics grading scale">
+            <thead>
+              <tr><th>Score</th><th>Recording</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>18 - 20</td><td>Excellent</td></tr>
+              <tr><td>14 - 17</td><td>Proficient</td></tr>
+              <tr><td>13 &amp; below</td><td>Needs review</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">Multiple Choice <span class="points">(10 items × 2 points = 20 points)</span></div>
+        <div id="mathMcqContainer"></div>
+      </section>
+
+      <section class="card">
+        <div class="actions">
+          <button id="mathSubmitButton" class="submit" type="submit">Submit Examination</button>
+          <button class="reset" type="button" onclick="resetMathExam()">Reset Answers</button>
+        </div>
+      </section>
+    </form>
+
+    <section id="mathResult" role="dialog" aria-modal="true" aria-labelledby="mathResultTitle" style="display:none;position:fixed;inset:0;z-index:10;overflow-y:auto;margin:0;padding:28px 15px;background:rgba(0,43,92,.55)">
+      <div class="result-dialog">
+        <button class="result-close" type="button" onclick="closeResult('mathResult')" aria-label="Close mathematics result">Close</button>
+        <div id="mathResultTitle" class="section-title">Examination Result</div>
+        <div id="mathResultText"></div>
+        <div id="mathReview" class="review"></div>
       </div>
     </section>
-
-    <section class="card">
-      <div class="section-title">Multiple Choice <span class="points">(40 items × 2 points = 80 points)</span></div>
-      <div id="mcqContainer"></div>
-    </section>
-
-    <section class="card">
-      <div class="actions">
-        <button id="submitButton" class="submit" type="submit">Submit Examination</button>
-        <button class="reset" type="button" onclick="resetExam()">Reset Answers</button>
-      </div>
-    </section>
-  </form>
-
-  <section id="result" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
-    <div class="result-dialog">
-      <button class="result-close" type="button" onclick="closeResult()" aria-label="Close examination result">Close</button>
-      <div id="resultTitle" class="section-title">Examination Result</div>
-      <div id="resultText"></div>
-      <div id="review" class="review"></div>
-    </div>
-  </section>
+  </div>
 </main>
 
 <footer>ICT G11 • Problem Analysis, Algorithms, Pseudocode and Java Fundamentals</footer>
 
 <script>
 const questions = [
-["Who led the Green Team at Sun Microsystems in the early 1990s that created the programming language originally named Oak?",["Dennis Ritchie","James Gosling","Bjarne Stroustrup","Guido van Rossum"],"B","James Gosling led the Green Team and created Oak, later renamed Java."],
-["Which Java core component compiles Java source code (.java) into bytecode (.class)?",["JVM","JRE","javac","JDK Library"],"C","The javac tool transforms Java source code into bytecode."],
-["Which Java platform is designed for mobile and resource-constrained embedded devices?",["Java SE","Java EE / Jakarta EE","Java ME","Java Card"],"C","Java ME is designed for embedded and resource-constrained devices."],
-["Which core component executes Java bytecode and supports platform independence?",["Java Virtual Machine (JVM)","Java Development Kit (JDK)","Java Compiler (javac)","Integrated Development Environment (IDE)"],"A","The JVM executes bytecode and enables cross-platform execution."],
-["Which object-oriented principle keeps data and behavior grouped together within a class?",["Inheritance","Polymorphism","Abstraction","Encapsulation"],"D","Encapsulation keeps data and behavior together within classes and objects."],
-["What popular Java web framework is widely used to build web applications and RESTful microservices?",["Swing","JavaFX","Spring Boot","Jakarta Card"],"C","Spring Boot is widely used for web applications and microservices."],
-["Which platform is tailored for smart cards, SIM cards, and secure elements?",["Java SE","Java Card","Java ME","Jakarta EE"],"B","Java Card targets smart cards, SIM cards, and secure elements."],
-["What mechanism automatically manages memory by removing objects that are no longer needed?",["Manual Deallocation","Bytecode Verification","Garbage Collection","Just-In-Time Compilation"],"C","Garbage collection reclaims memory held by unreferenced objects."],
-["Which environment variable points directly to the JDK installation directory?",["PATH","JAVA_HOME","CLASSPATH","JDK_ROOT"],"B","JAVA_HOME points to the JDK installation directory."],
-["Which command displays the currently installed version of the Java compiler?",["java -version","javac -version","java -compiler","javac -v"],"B","The command javac -version prints the compiler version."],
-["What IDE feature suggests keywords, methods, and variables as code is typed?",["Code Completion","Syntax Highlighting","Error Detection","Integrated Debugger"],"A","Code completion suggests methods, variables, and keywords."],
-["In a standard Java project, which component contains compiled .class files produced during building?",["Source Packages","Libraries","Build Files","Project Files"],"C","Build files contain compiled class files and generated build artifacts."],
-["Which IDE feature displays keywords and strings in distinct colors?",["Integrated Debugger","Version Control Integration","Syntax Highlighting","Code Refactoring"],"C","Syntax highlighting uses distinct colors for code elements."],
-["What is the primary function of the Build process before running a Java application?",["Executes the program in the JVM","Compiles source code into bytecode and checks for errors","Formats the source code style","Deletes old class files"],"B","Building compiles source code and reports compilation errors."],
-["What is the exact entry point method where every Java console application begins execution?",["public static void Start(String[] args)","public void main(String args)","public static void main(String[] args)","static main(String[] args)"],"C","The standard entry point is public static void main(String[] args)."],
-["If a class is declared as public class GradeReport, what must the source file be named?",["gradereport.java","GradeReport.java","GradeReport.class","Grade_Report.java"],"B","A public class name must match its source file name exactly."],
-["What naming convention is standard for Java class names such as StudentPortal?",["camelCase","snake_case","PascalCase","UPPERCASE"],"C","Java class names conventionally use PascalCase."],
-["Which symbol terminates standard executable statements in Java?",["Colon (:)","Period (.)","Semicolon (;)","Comma (,)"],"C","Standard Java statements terminate with a semicolon."],
-["Which keyword indicates that a method does not return a value?",["static","public","void","null"],"C","The void keyword indicates no return value."],
-["What naming convention is standard for Java method and variable names?",["PascalCase","camelCase","Kebab-case","MACRO_CASE"],"B","Methods and variables conventionally use camelCase."],
-["What structural error occurs when a complete method declaration is written inside another method?",["Nesting error / Illegal method placement","Method chaining","Class inheritance issue","Package violation"],"A","Java method declarations cannot be nested inside another method."],
-["What is a group of code enclosed within opening and closing curly braces called?",["Statement","Block","Class header","Expression"],"B","Code enclosed in braces is called a block."],
-["Which primitive type occupies 32 bits and is the default choice for integer values?",["byte","short","int","long"],"C","int is a 32-bit signed integer type."],
-["What suffix must be appended to a floating-point literal assigned directly to a float?",["D or d","F or f","L or l","M or m"],"B","Float literals require an F or f suffix."],
-["Which primitive type stores a single Unicode character in single quotes?",["String","char","byte","Text"],"B","The char type stores one Unicode character."],
-["Which keyword declares a constant whose value cannot be reassigned?",["static","const","final","immutable"],"C","The final keyword prevents reassignment after initialization."],
-["What comment begins with /** and ends with */ for Javadoc HTML documentation?",["Single-line comment","Block comment","Documentation comment","Inline comment"],"C","Documentation comments are parsed by Javadoc."],
-["What conversion occurs automatically when assigning a smaller numeric type to a larger type?",["Narrowing conversion","Explicit casting","Widening conversion","String parsing"],"C","Assigning a smaller numeric type to a larger one is widening conversion."],
-["What is the result of value %= 3 when value initially equals 11?",["3","2","3.66","0"],"B","11 % 3 equals 2, the remainder after division."],
-["What symbols create a single-line comment in Java?",["/*","//","#","<!--"],"B","Single-line comments begin with two forward slashes."],
-["What is the process of breaking a large problem into smaller manageable tasks called?",["Algorithm design","Decomposition","Pseudocode","Verification"],"B","Decomposition breaks a larger problem into smaller tasks."],
-["Which flowchart shape represents an Input or Output operation?",["Oval / Rectangle with rounded ends","Parallelogram","Rectangle","Diamond"],"B","A parallelogram represents input/output operations."],
-["In pseudocode, what is the purpose of SET?",["Obtains information from the user","Assigns or calculates a value","Displays a result","Indicates algorithm end"],"B","SET assigns or calculates a value."],
-["What type of flowchart symbol is represented by a diamond?",["Terminator","Process","Decision","Flowline"],"C","A diamond represents a decision condition."],
-["What error occurs when a program runs but produces incorrect results?",["Syntax error","Runtime crash","Logic error","Linker error"],"C","A logic error causes incorrect operations or results."],
-["In Java integer division, what is the result of 7 / 2?",["3.5","3","4","1"],"B","Integer division discards the decimal fraction and yields 3."],
-["Which relational operator checks whether two values are equal?",["=","==","!=","<>"],"B","The == operator tests equality; = performs assignment."],
-["What is the result of (true || false)?",["true","false","null","Error"],"A","Logical OR is true when at least one operand is true."],
-["Which operation is performed first in 10 + 5 * 2?",["10 + 5","5 * 2","Left to right addition","Evaluates to 30"],"B","Multiplication has higher precedence than addition."],
-["Which logical operator reverses a Boolean value?",["&&","||","!","^"],"C","The logical NOT operator ! inverts a Boolean value."]
+["A teacher needs to store the grades of 40 students. Why is using an array more practical than declaring 40 separate variables?",["An array automatically sorts all grades.","An array stores related values under one variable name.","An array allows values of different data types in every position.","An array increases its size whenever a new grade is added."],"B","An array groups related values under one variable name."],
+["A Java array is created to store 8 product prices. What does the number 8 represent?",["The last valid index","The first valid index","The number of elements the array can hold","The number of arrays created"],"C","The number 8 is the array size, or number of elements it can hold."],
+["Why does the first element of a Java array use index 0 instead of index 1?",["Java uses zero-based indexing.","Java arrays cannot store a value at index 1.","Index 0 is reserved for the array's size.","The first element is not counted as an element."],"A","Java array indices begin at 0."],
+["A program contains int[] scores = new int[6];. Which statement best describes this array?",["It stores six values that must all be different.","It stores six integer values and has indices 0 through 5.","It stores five integer values and has indices 0 through 6.","It can store any number of integer values."],"B","The array has six integer elements with indices 0 through 5."],
+["A programmer already knows the values to be stored in an array. Which approach is most suitable?",["Declare the array without a data type.","Use an array initializer with the values.","Create an array with a negative size.","Store each value in a separate loop."],"B","An array initializer directly stores known values."],
+["Why is grades[2] used to access the third grade in an array?",["Array indices begin at 1.","The number inside the brackets represents the value.","Array indices begin at 0, so index 2 is the third position.","Index 2 always contains the highest value."],"C","With zero-based indexing, index 2 is the third position."],
+["A program changes grades[1] from 90 to 95. What happens to the array?",["The second element is updated, while the other elements remain unchanged.","Every element in the array becomes 95.","The array automatically gains another element.","The first element is removed."],"A","Index 1 refers only to the second element."],
+["What is the likely result of trying to access an array index that is outside its valid range?",["Java automatically creates the missing element.","The array is sorted automatically.","The program may throw an ArrayIndexOutOfBoundsException.","Java returns the last element every time."],"C","An invalid array index can cause ArrayIndexOutOfBoundsException."],
+["Why is a for loop useful when processing an array?",["It changes the array into a different data type.","It can visit each element without writing a separate statement for every position.","It automatically finds the largest element.","It removes the need to declare an array."],"B","A loop visits array elements through changing index values."],
+["What information does the length property provide when used with an array?",["The index of the largest value","The data type of the array","The number of elements in the array","The number of times the array has been sorted"],"C","An array's length property gives its element count."],
+["A loop uses i < grades.length as its condition. Why is this a suitable condition when starting i at 0?",["It allows the loop to process valid indices from 0 through the last index.","It makes the loop skip the first element.","It makes the loop process one extra element.","It changes the array's length after every iteration."],"A","Valid indices run from 0 up to, but not including, the array length."],
+["In the expression quantities[i], what does i represent?",["The value stored in the array","The current position used to access an element","The total of all quantities","The number of arrays in the program"],"B","i is the array index used to access the current element."],
+["A program displays Product 1 for the element at index 0 by using i + 1. Why is this done?",["To increase the stored quantity by one","To convert the array into a one-based array","To display human-friendly product numbers beginning at 1","To skip the first product"],"C","i + 1 converts zero-based indices into human-friendly numbering."],
+["A store receives additional stock for its second product. Which operation is appropriate if the quantity is stored at index 1?",["quantities[1] = newQuantity;","quantities[0] = newQuantity;","quantities.length = newQuantity;","quantities = 1;"],"A","Index 1 accesses the second product's quantity."],
+["After an array is created with a fixed size, what happens when one of its elements is updated?",["The array's size automatically increases.","The array's size remains the same.","All other elements are deleted.","The array becomes a variable that can store only one value."],"B","Updating an element does not change the fixed array size."],
+["Why might a program initialize a total variable to 0 before adding array elements?",["Zero is the starting value for accumulating a sum.","Zero identifies the last array index.","Zero prevents the loop from running.","Zero sorts the array in ascending order."],"A","Using 0 ensures the accumulated sum starts correctly."],
+["In a loop that calculates a total, what is the purpose of total += quantities[i]?",["It subtracts the current quantity from the total.","It adds the current element to the running total.","It replaces the current element with the total.","It compares the current element with the array length."],"B","The compound assignment adds the current element to total."],
+["A program needs to find the highest and lowest quantities in an array. Why can both variables initially be assigned quantities[0]?",["The first element provides an actual array value to use as the initial comparison.","The first element is guaranteed to be the highest and lowest.","Index 0 always contains zero.","Java requires highest and lowest to have the same value permanently."],"A","Using an actual first element provides a valid starting comparison value."],
+["Why does the loop for finding the highest and lowest values often begin at index 1?",["Index 0 is not a valid array position.","The first element has already been used to initialize the comparison variables.","The loop must ignore the second element.","The array's length property begins at 1."],"B","Starting at index 1 avoids comparing the initialized value with itself."],
+["When checking for a new highest value, why does the program compare quantities[i] > highest?",["To determine whether the current element is larger than the highest value found so far","To determine whether the current element is the first element","To check whether the array is full","To move the current element to index 0"],"A","This comparison identifies a new maximum."],
+["What does sorting mean in the context of an array?",["Removing duplicate values from the array","Arranging the elements in a particular order","Increasing the array's size","Converting all elements into text"],"B","Sorting arranges array elements in ascending or descending order."],
+["Which sequence represents ascending order?",["15, 12, 10, 8, 6","6, 8, 10, 12, 15","10, 6, 15, 8, 12","12, 15, 6, 10, 8"],"B","Ascending order proceeds from smallest to largest."],
+["A list must be arranged from the largest value to the smallest value. Which order is required?",["Ascending","Random","Descending","Indexed"],"C","Descending order goes from largest to smallest."],
+["What is the main idea behind Bubble Sort?",["Repeatedly compare adjacent elements and swap them when they are in the wrong order.","Find the smallest value once and stop.","Insert every element into a separate array.","Compare only the first and last elements."],"A","Bubble Sort repeatedly swaps out-of-order adjacent elements."],
+["During an ascending Bubble Sort, what happens when the left element is greater than the element immediately to its right?",["The two adjacent elements are swapped.","Both elements are deleted.","The array's length is reduced.","The left element is copied to every position."],"A","For ascending order, the larger left element is swapped to the right."],
+["In Bubble Sort, why does the largest remaining unsorted value move toward the end during a pass?",["Adjacent comparisons and swaps move larger values to the right.","The algorithm always selects the last value first.","The array automatically reverses itself.","The outer loop removes the largest value."],"A","Repeated adjacent swaps move larger values toward the end."],
+["What is the role of the temporary variable temp in a swapping operation?",["It stores the array length.","It temporarily holds one value so the two values can exchange positions without losing either one.","It identifies the smallest index.","It counts the number of loop iterations."],"B","A temporary variable prevents a value from being overwritten during a swap."],
+["How is Selection Sort different from Bubble Sort?",["Selection Sort repeatedly searches for the smallest value in the unsorted portion, while Bubble Sort compares adjacent elements.","Selection Sort uses no comparisons, while Bubble Sort uses comparisons.","Selection Sort only works with text, while Bubble Sort only works with numbers.","Selection Sort increases the array size, while Bubble Sort decreases it."],"A","Selection Sort selects an extreme value, whereas Bubble Sort swaps adjacent values."],
+["In Selection Sort, what information does minIndex store?",["The total number of elements already sorted","The index of the smallest value found in the unsorted portion","The value of the largest element","The number of swaps performed by Bubble Sort"],"B","minIndex tracks the position of the smallest remaining value."],
+["After Selection Sort identifies the smallest remaining value, what does it do?",["Places it in the current position at the beginning of the unsorted portion.","Deletes it from the array.","Moves it to the final index in every pass.","Leaves it where it is and starts over."],"A","It swaps the smallest remaining value into the next sorted position."],
+["What is the main idea behind Insertion Sort?",["Select one element at a time and insert it into its correct position among the previously processed elements.","Swap every pair of adjacent elements exactly once.","Find the smallest element and place it at the end.","Divide the array into unrelated arrays."],"A","Insertion Sort grows a sorted portion and inserts each new value into it."],
+["Why is Insertion Sort often compared to arranging playing cards in your hand?",["Each new card is placed in the appropriate position among cards already arranged.","All cards are shuffled after every comparison.","The cards are arranged according to their colors only.","The method requires placing every card at the end."],"A","Each selected card is inserted into the correct place among sorted cards."],
+["In the Insertion Sort example, what does the variable current represent?",["The array's length","The value currently being inserted into its correct position","The smallest index in the array","The number of completed sorting algorithms"],"B","current holds the value being inserted into the sorted portion."],
+["Why does Insertion Sort shift larger elements one position to the right?",["To create an open position where the selected value can be inserted.","To remove larger elements from the array.","To increase the array's capacity.","To move the smallest element to the last index."],"A","Shifting makes room for current at its correct position."],
+["Which statement correctly describes a key difference among the three sorting algorithms?",["Bubble Sort compares adjacent elements, Selection Sort selects the smallest remaining value, and Insertion Sort inserts each selected value into a sorted portion.","All three algorithms sort by deleting values and creating new ones.","Bubble Sort inserts values, Selection Sort compares only adjacent elements, and Insertion Sort finds only the maximum.","All three algorithms use exactly the same steps and comparisons."],"A","This statement accurately summarizes Bubble, Selection, and Insertion Sort."]
+];
+
+const mathQuestions = [
+  ["What is the value of 12 + 8 × 3?",["36","60","28","24"],"B","Multiplication comes before addition, so 8 × 3 = 24 and 12 + 24 = 36."],
+  ["Find the remainder when 49 is divided by 6.",["1","3","4","5"],"C","49 ÷ 6 = 8 remainder 1."],
+  ["What is 25% of 240?",["40","50","60","80"],"C","25% of 240 is 0.25 × 240 = 60."],
+  ["Solve for x: 3x - 9 = 12.",["x = 3","x = 5","x = 7","x = 9"],"C","Add 9 to both sides: 3x = 21, then divide by 3."],
+  ["Which fraction is equivalent to 0.75?",["1/2","2/3","3/4","4/5"],"C","0.75 = 75/100 = 3/4."],
+  ["A triangle has angles 45°, 65°, and x°. What is x?",["60°","70°","80°","90°"],"B","The sum of triangle angles is 180°, so x = 180 - 45 - 65 = 70."],
+  ["What is the product of 7 and 9?",["56","63","72","81"],"B","7 × 9 = 63."],
+  ["Which number is the greatest common factor of 24 and 36?",["6","8","12","18"],"C","12 is the greatest common factor of 24 and 36."],
+  ["If a = 5 and b = 2, what is a² - b²?",["17","21","29","31"],"C","25 - 4 = 21."],
+  ["What is the perimeter of a square with side length 6 cm?",["12 cm","18 cm","24 cm","36 cm"],"C","Perimeter = 4 × 6 = 24 cm."]
 ];
 
 function escapeHTML(value){
-  return String(value).replace(/[&<>"']/g,character=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[character]));
+  return String(value).replace(/[&<>"']/g,character=>(
+    {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[character])
+  );
 }
 
 function renderMCQ(){
@@ -310,6 +390,19 @@ function renderMCQ(){
       ${q[1].map((opt,j)=>{
         const letter=String.fromCharCode(65+j);
         return `<label class="option"><input type="radio" name="q${n}" value="${letter}"${j===0?" required":""}> <strong>${letter}.</strong> ${escapeHTML(opt)}</label>`;
+      }).join("")}
+    </div>`;
+  }).join("");
+}
+function renderMathQuestions(){
+  const c=document.getElementById("mathMcqContainer");
+  c.innerHTML=mathQuestions.map((q,i)=>{
+    const n=i+1;
+    return `<div class="question">
+      <div class="qtext">${n}. ${escapeHTML(q[0])}</div>
+      ${q[1].map((opt,j)=>{
+        const letter=String.fromCharCode(65+j);
+        return `<label class="option"><input type="radio" name="m${n}" value="${letter}"${j===0?" required":""}> <strong>${letter}.</strong> ${escapeHTML(opt)}</label>`;
       }).join("")}
     </div>`;
   }).join("");
@@ -367,18 +460,48 @@ if (!saveMessage) {
   document.getElementById("submissionLoading").style.display="none";
   document.getElementById("result").style.display="block";
   document.getElementById("resultText").innerHTML=
-    `<div class="score">${points} / 80</div>
-     <p><strong>Multiple-choice:</strong> ${correct} correct out of 40. ${answered} item(s) answered.</p>
-     <p class="success">Your score is based on 40 multiple-choice items worth 2 points each.</p>
+    `<div class="score">${points} / 70</div>
+     <p><strong>Multiple-choice:</strong> ${correct} correct out of 35. ${answered} item(s) answered.</p>
+     <p class="success">Your score is based on 35 multiple-choice items worth 2 points each.</p>
      ${saveMessage?`<p class="warning"><strong>Save status:</strong> ${saveMessage}</p>`:"<p class=\"success\"><strong>Save status:</strong> Result saved successfully.</p>"}`;
   document.getElementById("review").innerHTML = review.length
     ? `<h3>Items to Review</h3>${review.map(x=>`<div class="wrong">Item ${x.n}: your answer <strong>${x.selected}</strong> • correct answer <strong>${x.correct}</strong><br>${questions[x.n-1][3]}</div>`).join("")}`
     : `<div class="correct">Excellent! All answered items are correct.</div>`;
   document.querySelector(".result-close").focus();
 }
+async function gradeMath(){
+  let correct=0, answered=0, review=[];
+  const form=document.getElementById("mathExamForm");
+  mathQuestions.forEach((q,i)=>{
+    const selected=form.querySelector(`input[name="m${i+1}"]:checked`);
+    form.querySelectorAll(`input[name="m${i+1}"]`).forEach(input=>{
+      const option=input.closest(".option");
+      option.classList.toggle("answer-correct",input.value===q[2]);
+      option.classList.toggle("answer-wrong",Boolean(selected)&&input===selected&&input.value!==q[2]);
+    });
+    if(selected){
+      answered++;
+      if(selected.value===q[2]) correct++;
+      else review.push({n:i+1,selected:selected.value,correct:q[2]});
+    }
+  });
+  const points=correct*2;
+  const result=document.getElementById("mathResult");
+  const resultText=document.getElementById("mathResultText");
+  const reviewBox=document.getElementById("mathReview");
+  result.style.display="block";
+  resultText.innerHTML=`<div class="score">${points} / 20</div>
+    <p><strong>Multiple-choice:</strong> ${correct} correct out of 10. ${answered} item(s) answered.</p>
+    <p class="success">Your score is based on 10 multiple-choice items worth 2 points each.</p>`;
+  reviewBox.innerHTML = review.length
+    ? `<h3>Items to Review</h3>${review.map(x=>`<div class="wrong">Item ${x.n}: your answer <strong>${x.selected}</strong> • correct answer <strong>${x.correct}</strong><br>${mathQuestions[x.n-1][3]}</div>`).join("")}`
+    : `<div class="correct">Excellent! All answered items are correct.</div>`;
+  result.querySelector(".result-close").focus();
+}
 document.getElementById("examForm").addEventListener("submit",e=>{e.preventDefault();grade();});
-function closeResult(){
-  document.getElementById("result").style.display="none";
+document.getElementById("mathExamForm").addEventListener("submit",e=>{e.preventDefault();gradeMath();});
+function closeResult(targetId="result"){
+  document.getElementById(targetId).style.display="none";
   document.body.style.overflow="";
 }
 function resetExam(){
@@ -388,13 +511,39 @@ function resetExam(){
     window.scrollTo({top:0,behavior:"smooth"});
   }
 }
+function resetMathExam(){
+  if(confirm("Reset all answers?")){
+    document.getElementById("mathExamForm").reset();
+    closeResult("mathResult");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+}
 function retakeExam(){
   window.location.reload();
 }
+function switchTab(tabName){
+  const tabs=document.querySelectorAll(".tab-button");
+  const panels=document.querySelectorAll(".tab-panel");
+  tabs.forEach(button=>{
+    const isActive=button.dataset.tab===tabName;
+    button.classList.toggle("active",isActive);
+    button.setAttribute("aria-selected",String(isActive));
+  });
+  panels.forEach(panel=>{
+    const isActive=panel.id===`${tabName}-panel`;
+    panel.classList.toggle("active",isActive);
+    panel.hidden=!isActive;
+  });
+}
+document.querySelectorAll(".tab-button").forEach(button=>{
+  button.addEventListener("click",()=>switchTab(button.dataset.tab));
+});
 function prepareExam(){
   shuffleQuestions();
   renderMCQ();
+  renderMathQuestions();
   document.getElementById("date").valueAsDate=new Date();
+  document.getElementById("mathDate").valueAsDate=new Date();
   document.getElementById("loadingMessage").textContent="Your questions are ready. Good luck!";
   const startButton=document.getElementById("startExam");
   startButton.disabled=false;
