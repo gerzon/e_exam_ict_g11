@@ -143,6 +143,24 @@ const supabaseClient = window.supabase.createClient(
     position:fixed;inset:0;z-index:60;display:none;place-items:center;
     padding:20px;background:rgba(0,43,92,.98);color:#fff
   }
+  #questionPopup{
+    position:fixed;inset:0;z-index:25;display:none;place-items:center;
+    padding:20px;background:rgba(0,43,92,.78)
+  }
+  .question-popup-dialog{
+    width:min(720px,100%);max-height:90vh;overflow-y:auto;
+    background:#fff;border-radius:12px;padding:24px;
+    box-shadow:0 12px 35px rgba(0,0,0,.28);
+    border-top:7px solid var(--sti-yellow)
+  }
+  .question-progress{
+    display:flex;justify-content:space-between;gap:10px;
+    color:#667085;font-size:13px;font-weight:700;margin-bottom:12px
+  }
+  .question-popup-dialog .qtext{font-size:18px}
+  .question-popup-actions{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+  .question-popup-actions button{min-width:110px}
+  .question-popup-actions .next-button{background:var(--sti-blue);color:#fff;margin-left:auto}
   .welcome-dialog{
     width:min(560px,100%);text-align:center;background:#fff;color:var(--text);
     border-top:7px solid var(--sti-yellow);border-radius:12px;padding:34px 28px;
@@ -185,6 +203,8 @@ const supabaseClient = window.supabase.createClient(
   <div class="welcome-dialog">
     <h2 id="welcomeTitle">Welcome to the Examination</h2>
     <p class="loading-message" id="loadingMessage">Preparing your randomized multiple-choice questions...</p>
+    <label for="welcomeName">Full Name</label>
+    <input id="welcomeName" type="text" placeholder="Enter your full name" required autocomplete="name">
     <button id="startExam" type="button" disabled>Loading...</button>
   </div>
 </section>
@@ -200,6 +220,19 @@ const supabaseClient = window.supabase.createClient(
     <h2 id="pageLeaveTitle">Examination Paused</h2>
     <p class="loading-message">You left the examination page or minimized the window. Return to this page and fullscreen mode to continue.</p>
     <button id="returnPage" type="button">Return to Examination</button>
+  </div>
+</section>
+<section id="questionPopup" role="dialog" aria-modal="true" aria-labelledby="questionPopupText">
+  <div class="question-popup-dialog">
+    <div class="question-progress">
+      <span id="questionProgressText">Question 1 of 35</span>
+      <span>ICT G11</span>
+    </div>
+    <div id="questionPopupContent"></div>
+    <div class="question-popup-actions">
+      <button id="previousQuestion" class="reset" type="button">Previous</button>
+      <button id="nextQuestion" class="next-button" type="button">Next</button>
+    </div>
   </div>
 </section>
 <header>
@@ -382,17 +415,7 @@ function escapeHTML(value){
 }
 
 function renderMCQ(){
-  const c=document.getElementById("mcqContainer");
-  c.innerHTML=questions.map((q,i)=>{
-    const n=i+1;
-    return `<div class="question">
-      <div class="qtext">${n}. ${escapeHTML(q[0])}</div>
-      ${q[1].map((opt,j)=>{
-        const letter=String.fromCharCode(65+j);
-        return `<label class="option"><input type="radio" name="q${n}" value="${letter}"${j===0?" required":""}> <strong>${letter}.</strong> ${escapeHTML(opt)}</label>`;
-      }).join("")}
-    </div>`;
-  }).join("");
+  document.getElementById("mcqContainer").innerHTML="";
 }
 function renderMathQuestions(){
   const c=document.getElementById("mathMcqContainer");
@@ -413,21 +436,75 @@ function shuffleQuestions(){
     [questions[i],questions[j]]=[questions[j],questions[i]];
   }
 }
+let currentQuestionIndex=0;
+const ictAnswers={};
+function renderCurrentQuestion(){
+  const q=questions[currentQuestionIndex];
+  if(!q) return;
+  const n=currentQuestionIndex+1;
+  document.getElementById("questionProgressText").textContent=`Question ${n} of ${questions.length}`;
+  document.getElementById("questionPopupContent").innerHTML=
+    `<div class="question">
+      <div class="qtext" id="questionPopupText">${n}. ${escapeHTML(q[0])}</div>
+      ${q[1].map((opt,j)=>{
+        const letter=String.fromCharCode(65+j);
+        const checked=ictAnswers[n]===letter?" checked":"";
+        return `<label class="option"><input type="radio" name="q${n}" value="${letter}"${checked}> <strong>${letter}.</strong> ${escapeHTML(opt)}</label>`;
+      }).join("")}
+    </div>`;
+  document.querySelectorAll(`#questionPopupContent input[name="q${n}"]`).forEach(input=>{
+    input.addEventListener("change",()=>{
+      ictAnswers[n]=input.value;
+    });
+  });
+  document.getElementById("previousQuestion").style.visibility=currentQuestionIndex===0?"hidden":"visible";
+  document.getElementById("nextQuestion").textContent=currentQuestionIndex===questions.length-1?"Submit Examination":"Next";
+  document.getElementById("questionPopup").style.display="grid";
+  document.body.style.overflow="hidden";
+  document.querySelector(`#questionPopupContent input[name="q${n}"]:checked`)?.focus();
+}
+function openSequentialQuestions(){
+  currentQuestionIndex=0;
+  renderCurrentQuestion();
+}
+document.getElementById("previousQuestion").addEventListener("click",()=>{
+  if(currentQuestionIndex>0){
+    currentQuestionIndex--;
+    renderCurrentQuestion();
+  }
+});
+document.getElementById("nextQuestion").addEventListener("click",()=>{
+  const questionNumber=currentQuestionIndex+1;
+  if(!ictAnswers[questionNumber]){
+    alert("Please select an answer before continuing.");
+    return;
+  }
+  if(currentQuestionIndex===questions.length-1){
+    grade();
+  }else{
+    currentQuestionIndex++;
+    renderCurrentQuestion();
+  }
+});
 async function grade(){
+  const studentName=document.getElementById("name").value.trim();
+  if(!studentName){
+    document.getElementById("questionPopup").style.display="none";
+    document.getElementById("examForm").scrollIntoView({block:"start",behavior:"smooth"});
+    document.getElementById("name").focus();
+    alert("Full name is required before saving the examination.");
+    return;
+  }
+  document.getElementById("questionPopup").style.display="none";
   document.getElementById("submissionLoading").style.display="grid";
   document.body.style.overflow="hidden";
   let correct=0, answered=0, review=[];
   questions.forEach((q,i)=>{
-    const selected=document.querySelector(`input[name="q${i+1}"]:checked`);
-    document.querySelectorAll(`input[name="q${i+1}"]`).forEach(input=>{
-      const option=input.closest(".option");
-      option.classList.toggle("answer-correct",input.value===q[2]);
-      option.classList.toggle("answer-wrong",Boolean(selected)&&input===selected&&input.value!==q[2]);
-    });
+    const selected=ictAnswers[i+1];
     if(selected){
       answered++;
-      if(selected.value===q[2]) correct++;
-      else review.push({n:i+1,selected:selected.value,correct:q[2]});
+      if(selected===q[2]) correct++;
+      else review.push({n:i+1,selected,correct:q[2]});
     }
   });
   const points=correct*2;
@@ -439,7 +516,7 @@ async function grade(){
     const { error } = await supabaseClient
       .from("exam_submissions")
       .insert({
-        student_name: document.getElementById("name").value.trim(),
+        student_name: studentName,
         section: document.getElementById("section").value.trim(),
         exam_date: document.getElementById("date").value,
         mcq_score: points,
@@ -507,7 +584,11 @@ function closeResult(targetId="result"){
 function resetExam(){
   if(confirm("Reset all answers?")){
     document.getElementById("examForm").reset();
+    Object.keys(ictAnswers).forEach(key=>delete ictAnswers[key]);
+    currentQuestionIndex=0;
+    document.getElementById("questionPopup").style.display="none";
     closeResult();
+    openSequentialQuestions();
     window.scrollTo({top:0,behavior:"smooth"});
   }
 }
@@ -580,6 +661,15 @@ function resumeAfterPageReturn(){
   }
 }
 async function startExam(){
+  const welcomeName=document.getElementById("welcomeName");
+  const studentName=welcomeName.value.trim();
+  if(!studentName){
+    document.getElementById("loadingMessage").textContent="Enter your full name before starting the examination.";
+    welcomeName.focus();
+    alert("Full name is required before starting the examination.");
+    return;
+  }
+  document.getElementById("name").value=studentName;
   try{
     await enterFullscreen();
   }catch(error){
@@ -592,6 +682,7 @@ async function startExam(){
   document.body.style.overflow="";
   examStarted=true;
   document.getElementById("name").focus();
+  openSequentialQuestions();
 }
 document.getElementById("startExam").addEventListener("click",startExam);
 document.getElementById("returnFullscreen").addEventListener("click",startExam);
